@@ -18,5 +18,6 @@ node {
                     //add stage sonar
                    // sh 'mvn sonar:sonar'
                 }
+	
        
 }

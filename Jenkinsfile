@@ -1,23 +1,18 @@
-#!groovy
-
-node {
-	   
-	stage('Checkout'){
-
-          checkout scm
-       }
-
-       stage('BuildArtifact'){
-
-         // sh 'mvn install'
-	       
-	       sh 'mvn clean'
-       }
-	   
-      stage('Sonar') {
-                    //add stage sonar
-                   // sh 'mvn sonar:sonar'
-                }
-	
-       
+node('slavename2') {
+    def mvnHome
+    stage('Preparation') { 
+        git 'https://github.com/jglick/simple-maven-project-with-tests.git'
+        mvnHome = tool 'MAVEN3'
+    }
+    stage('Build') {
+        // Run the maven build
+        withEnv(["MVN_HOME=$mvnHome"]) {
+            if (isUnix()) {
+                sh '"$MVN_HOME/bin/mvn" -Dmaven.test.failure.ignore clean package'
+            } else {
+                bat(/"%MVN_HOME%\bin\mvn" -Dmaven.test.failure.ignore clean package/)
+            }
+        }
+    }
+    
 }

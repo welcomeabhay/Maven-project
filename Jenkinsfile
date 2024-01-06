@@ -1,4 +1,4 @@
-node('slavename1') {
+node {
     def mvnHome
     stage('Preparation') { 
         git 'https://github.com/jglick/simple-maven-project-with-tests.git'

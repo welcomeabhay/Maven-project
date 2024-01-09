@@ -131,6 +131,9 @@
                 <sonar.host.url>
                     http://54.208.74.219:9000/
                 </sonar.host.url>
+		    <sonar.login> 
+			    sqp_9331a868575feac0ec7950ec76c4458b655c6580
+		    </sonar.login>
             </properties>
         </profile>
     <profile>

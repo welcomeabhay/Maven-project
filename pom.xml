@@ -132,7 +132,7 @@
                     http://100.26.122.254:9000/
                 </sonar.host.url>
 		    <sonar.login> 
-			    sqp_9331a868575feac0ec7950ec76c4458b655c6580
+			    sqp_e4e575414f6e519be351692c350ea78462b66ba7
 		    </sonar.login>
             </properties>
         </profile>

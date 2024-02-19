@@ -206,7 +206,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.mt</groupId>
+   <groupId>com.mt</groupId>
   <artifactId>maven-web-project</artifactId>
   <packaging>war</packaging>
   <version>1.0-SNAPSHOT</version>
@@ -218,6 +218,39 @@
      <url>https://www.rogersoft.com/course/devops/</url>
  </organization>
 
+  <properties>
+    <spring.version>4.1.4.RELEASE</spring.version>
+    <junit.version>4.11</junit.version>
+    <log4j.version>1.2.17</log4j.version>
+    <sonar.host.url>http://100.26.122.254:9000/</sonar.host.url>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
+  <dependencies>
+    <!-- Dependencies here -->
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Plugins here -->
+    </plugins>
+  </build>
+
+  <profiles>
+    <!-- Profiles here -->
+  </profiles>
+
+  <distributionManagement>
+    <repository>
+      <id>maven-releases</id>
+      <url>http://3.140.250.248:8081/repository/maven-releases/</url>
+    </repository>
+    <snapshotRepository>
+      <id>maven-snapshots</id>
+      <url>http://3.140.250.248:8081/repository/maven-snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
   <properties>
 	    <spring.version>4.1.4.RELEASE</spring.version>
 		<junit.version>4.11</junit.version>
@@ -404,14 +437,4 @@
     </profile>
   </profiles>
 </project>
-<distributionManagement>
-    <repository>
-      <id>maven-releases</id>
-      <url>http://3.140.250.248:8081/repository/maven-releases/</url>
-    </repository>
-    <snapshotRepository>
-      <id>maven-snapshots</id>
-      <url>http://3.140.250.248:8081/repository/maven-snapshots/</url>
-    </snapshotRepository>
-  </distributionManagement>
 </project>

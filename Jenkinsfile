@@ -5,7 +5,7 @@ node {
         mvnHome = tool 'MAVEN3'
     }
     stage('Build') {
-        // Run the maven build
+        // Run the maven build..
         withEnv(["MVN_HOME=$mvnHome"]) {
             if (isUnix()) {
                 sh '"$MVN_HOME/bin/mvn" -Dmaven.test.failure.ignore clean package'
@@ -15,7 +15,7 @@ node {
         }
     }
     stage('Install') {
-        // Run the maven build
+        
         withEnv(["MVN_HOME=$mvnHome"]) {
             if (isUnix()) {
                 sh '"$MVN_HOME/bin/mvn" -Dmaven.test.failure.ignore clean install'
@@ -25,7 +25,7 @@ node {
         }
     }
     stage('Sonarqube') {
-        // Run the maven build
+
         withEnv(["MVN_HOME=$mvnHome"]) {
             if (isUnix()) {
                 sh '"$MVN_HOME/bin/mvn" -Dmaven.test.failure.ignore sonar:sonar'
@@ -36,3 +36,5 @@ node {
     }
     
 }
+
+

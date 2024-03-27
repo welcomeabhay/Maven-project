@@ -1,190 +1,286 @@
 #!/bin/bash
+#img_name=`basename $(find -iname *.csproj | grep -iv unittest) | sed 's/.csproj//g'`
+#img_name=``echo $GIT_URL | awk -F / '{print $(NF)}' | sed s/'.git'//``
 img_name=`echo $GIT_URL | awk -F / '{print $(NF)}' |  sed s/'.git'//`
 dimg_name=`echo $img_name | tr '[:upper:]' '[:lower:]'`
 instruction=$1
 #echo $BRANCH_NAME
 OBRANCH_NAME=$BRANCH_NAME
-if [[ $BRANCH_NAME = feature* ]]
+if [[ $BRANCH_NAME = *feature* ]]
 then
     BRANCH_NAME=feature
 fi
-env >>/tmp/cd-ui
-#echo $BRANCH_NAME
+env >>/tmp/webuici.env
 . /var/lib/jenkins/scripts/environment_version.sh
 . /var/lib/jenkins/scripts/$BRANCH_NAME
-
-deploy_env=`cat /var/lib/jenkins/scripts/environment`
 nex_ip=10.60.17.13
 port=1415
 rport=1416
-SonarQubeServer="http://10.60.17.12:9000"
-SonarLogin="f70b77bcf99080dc32f2487788372246dfa94657"
-DbUserName=CBSV2_PRODUCTS
-DbPassword=CBSV2_PRODUCTS
-DbHost=10.60.17.14
-DbPort=1521
-DbService=CBSV2POC
-
-if [[ $BRANCH_NAME = release ]]
+SonarQubeServer="http://******:9000"
+SonarLogin="***************"
+ if [[ $BRANCH_NAME = *release* ]]
 then
-  cwd=`pwd`
+  CWD=`pwd`
   cd /var/lib/jenkins/release-manifest
   rm -rf cbsv2poc.releasecontentdefinition >/dev/null
-  git clone  --quiet https://github.muthoot.local/Emsyne/cbsv2poc.releasecontentdefinition.git
-  cd $cwd
-fi
-
-
-function verify()
+  git clone --quiet https://github.**************.releasecontentdefinition.git
+  JSON_VERSION=`cat *******.releasecontentdefinition/release_manifest.json | jq -r --arg img_name $img_name '.CBS[].FrontEnd[] | select(.ServiceName==$img_name) | .Version'` >/dev/null
+ NEW_VERSION=$JSON_VERSION.$BUILD_ID
+ cd $CWD
+ fi
+function validation()
 {
-if [ -z "k8-manifest" ]
-    then
-      echo "Kubernetics Manefestfiles not found"
-      exit 1;
-fi
-
-if [ -z "/var/lib/jenkins/scripts/KUBECONFIG/kube.yml" ]
-    then
-      echo "TKG KUBECONFIG File not found"
-      exit 1;
-fi
-
-
-if [[ $BRANCH_NAME = release ]]
+  if [[ $BRANCH_NAME = *release* ]]
 then
-  cwd=`pwd`
-  cd /var/lib/jenkins/release-manifest
-  #echo $dimg_name
-  cat cbsv2poc.releasecontentdefinition/release_manifest.json | grep -w $dimg_name >/dev/null
-      if [ $? -ne 0 ]
-      then
-         echo "The $dimg_name not marked for release, So exiting "
-         exit -1
-      else
-        cd $cwd
-        VERSION=`jq -r .version package.json`
-        #echo "VERSION DETAILS :$VERSION $Source "
-        curl -u admin:admin567 -s $nex_ip:$rport/v2/$dimg_name/tags/list | jq -r '.tags[]' | grep $VERSION >/dev/null
-        #curl -u admin:admin567 -s $nex_ip:$rport/v2/$dimg_name/tags/list | jq -r '.tags[]'
-        if [ $? -ne 0 ]
-         then
-         echo  "!!! The $dimg_name not present in Nexus Repo, So exiting !!! "
-         exit -1
+    #BRANCH_NAME=feature
+    #CWD=`pwd`
+  #  cd /var/lib/jenkins/release-manifest
+  #rm -rf cbsv2poc.releasecontentdefinition >/dev/null
+  #git clone https://github.**********.releasecontentdefinition.git
+  #JSON_VERSION=`cat cbsv2poc.releasecontentdefinition/release_manifest.json | jq -r --arg img_name $img_name '.CBS[].FrontEnd[] | select(.ServiceName==$img_name) | .Version'`
+  #echo "img_name $img_name,dimg_name $dimg_name, JSON_VERSION: $JSON_VERSION"
+  #echo "BUILD_ID: $BUILD_ID"
+  #declare -g NEW_VERSION=$JSON_VERSION.$BUILD_ID
+  #echo "NEW VERSION: $NEW_VERSION"
+  #cd $CWD
+  git checkout release
+ jq --arg new_version "$NEW_VERSION" '.version = $new_version' "package.json" >package1.json
+ mv package1.json package.json
+ git add -f package.json
+ git commit -m "VERSION NO UPDATE FROM CI PIPELINE $NEW_VERSION"
+ #git push origin
+  git pull origin
+ git push --set-upstream origin release
+  #env >>/tmp/env
+fi
+# npm install
+npm install --legacy-peer-deps
+
+  #if [ $? -eq 0 ]
+  #then
+        #npm run lint
+        #exit $?
+  #else
+   #  echo "!!! Failed npm install !!! "
+    # exit 1
+  #fi
+
+#  VERSION=`cat $Filepath | grep -oPm1 "(?<=<AssemblyVersion>)[^<]+"`
+  #rm -rf cbsv2poc.releasecontentdefinition >/dev/null
+  #git clone https://github.*****************.releasecontentdefinition.git
+  #JSON_VERSION=`cat cbsv2poc.releasecontentdefinition/release_content_definition.json | jq --arg img_name $img_name '.CBS[].BackEnd[] | select(.ServiceName==$img_name) | .Version'`
+  #if [[ \"$VERSION\" == $JSON_VERSION ]]
+  #then
+#         echo "Version Matched"
+
+  #else
+    #echo "Version Mismatch, So stopping the build";
+    #exit 1;
+  ##fi
+
+# if [[ $BRANCH_NAME = *release* ]]
+#then
+
+# docker images | grep $dimg_name  | grep -v  $nex_ip:$port
+#  if [ $? -eq 0 ]
+#  then
+#     docker rmi $dimg_name:$NEW_VERSION
+#  fi
+
+#  docker images | grep $dimg_name
+#  if [ $? -eq 0 ]
+#  then
+#     docker rmi $nex_ip:$port/$dimg_name:$NEW_VERSION
+#  fi
+#else
+#  docker images | grep $dimg_name  | grep -v  $nex_ip:$port
+#  if [ $? -eq 0 ]
+#  then
+#     docker rmi $dimg_name:${tag[$BRANCH_NAME]}
+# fi
+
+# docker images | grep $dimg_name
+# if [ $? -eq 0 ]
+# then
+#    docker rmi $nex_ip:$port/$dimg_name:${tag[$BRANCH_NAME]}
+# fi
+#fi
+}
+
+
+function sourcecode_build()
+{
+        npm run build
+         if [ $? -eq 0 ]
+        then
+          echo "!!! NPM BUILD Sucess !!!"
         else
-         echo  "!!! The Docker Image $dimg_name  present in Nexus Release Repo !!! "
+          echo "!!! NPM BUILD FAILED !!! "
+          exit 1;
         fi
+}
 
-      fi
-
+function docker_build()
+{
+   echo "FROM nginx:stable-alpine" >Dockerfile
+   echo "WORKDIR /usr/share/nginx/html" >>Dockerfile
+   echo "RUN rm -rf ./*" >>Dockerfile
+   echo "COPY  dist/$dimg_name . " >>Dockerfile
+   echo "ENTRYPOINT [ \"nginx\",\"-g\", \"daemon off;\" ]" >>Dockerfile
+ if [[ $BRANCH_NAME = *release* ]]
+then
+   docker build --no-cache -t $dimg_name:$NEW_VERSION .
+else
+   docker build --no-cache -t $dimg_name:${tag[$BRANCH_NAME]} .
 fi
-#cd k8-manifestfiles
+  exit $?
+}
+function unittest()
+{
+    CWD=`pwd`
+    npm run test >UNITTEST
+    returnstatus=$?
+    #unittestfile=`cat $UNITTEST  | grep "Results File" | awk '{ print $3 }'`
+    #echo "Unit Test File : $unittestfile"
+    cd /var/lib/jenkins/UnitTestResults
+     git checkout feauture
+    ##cd
+        if [ ! -d "$img_name" ]
+        then
+                mkdir $img_name
+        fi
+       cd $img_name
+       cp $CWD/UNITTEST  UnittestResult-$(date +%Y%m%d%H%M)
+    #git switch feauture
+    git add -f   UnittestResult-$(date +%Y%m%d%H%M)
+    git commit -m "UnitTest Report generated from  $OBRANCH_NAME branch  @$(date +%Y-%m-%d_%H:%M)"
+    git push
+    echo $returnstatus
+    cd $CWD
+       npm run coverage
+          if [ $? -eq 0 ]
+        then
+                echo " !!! Code Coverage Stage Completed !!!"
+        else
+                echo " !!! Code Coverage failed !!!"
+                exit 1;
+        fi
+    exit $returnstatus
 }
 
-function approval()
+function sonarscan()
 {
-  #echo "Ï AM INSIDE APPROVAL : $dimg_name :"
-  if [[ $BRANCH_NAME = release ]]
-  then
-    cwd=`pwd`
-    cd /var/lib/jenkins/release-manifest
-    cat cbsv2poc.releasecontentdefinition/release_manifest.json | grep -w $dimg_name >/dev/null
-    if [ $? -ne 0 ]
-    then
-      echo "The $dimg_name not approved for release,So exiting"
-      exit -1
+
+  #echo " !!! I am inside SonarScanner !!! "
+  echo "sonar.host.url=http://*******:9000" >sonar-project.properties
+  echo "sonar.login=***********8" >>sonar-project.properties
+  echo "sonar.projectKey=$img_name.$BRANCH_NAME" >>sonar-project.properties
+  #echo " !!! I am inside SonarScanner !!! "
+  echo "sonar.host.url=http://******8:9000" >sonar-project.properties
+  echo "sonar.login=******************" >>sonar-project.properties
+  echo "sonar.projectKey=$img_name.$BRANCH_NAME" >>sonar-project.properties
+  #echo " !!! I am inside SonarScanner !!! "
+  echo "sonar.host.url=http://**********:9000" >sonar-project.properties
+  echo "sonar.login=*******************" >>sonar-project.properties
+  echo "sonar.projectKey=$img_name.$BRANCH_NAME" >>sonar-project.properties
+  echo "sonar.projectName=$img_name.$BRANCH_NAME" >>sonar-project.properties
+  echo "sonar.projectVersion=1.0" >>sonar-project.properties
+  echo "sonar.sourceEncoding=UTF-8" >>sonar-project.properties
+  echo "sonar.sources=src" >>sonar-project.properties
+  echo "sonar.exclusions=**/node_modules/**" >>sonar-project.properties
+  echo "sonar.tests=src" >>sonar-project.properties
+  echo "sonar.test.inclusions=**/*.spec.ts" >>sonar-project.properties
+  echo "sonar.typescript.lcov.reportPaths=coverage/reports/lcov.info" >>sonar-project.properties
+
+        reportprocessingurl=`npm run sonar 2>/dev/null | grep "More about the report processing at" |  awk '{ print $8 }'`
+    echo $reportprocessingurl >>/tmp/coverage-reportprocess
+    if [ $? -eq 1 ]; then
+      echo "Sonnar Scanner Failed for Coverage . . .";
+      exit 1;
     else
-      echo "!!! The $dimg_name approved for release !!!"
-    fi
-    cd $cwd
-  else
-    echo "Auto approval for dev branch"
+            reportstatus=`curl -s -u admin:admin123 $reportprocessingurl | jq -r '.task.status'`
+            echo $reportstatus >>/tmp/creport
+            i=0;
+            while [[ $reportstatus != "SUCCESS" ]]
+    do
+      echo "Report Generation Going on ... Checking after 5 min" >>/tmp/creport
+      sleep 5;
+      reportstatus=`curl -s -u admin:admin123 $reportprocessingurl | jq -r '.task.status'`
+      echo $reportstatus >>/tmp/creport
+      if [[ $i > 10 ]]
+      then
+             echo "Report Processing take more than expected time"
+             break ;
+      fi
+      i=$i+1;
+    done
+    echo "Report Generation Done... Kindly Check in SonarQube Url"
+    echo "For detail report kindly visit $SonarQubeServer/dashboard?id=$img_name.$BRANCH_NAME"
   fi
-
-}
-
-function database_scripts()
-{
-  echo "DB SCRIPTS NOT PRESENT "
-}
-
-function deployment()
-{
-  export KUBECONFIG=/var/lib/jenkins/scripts/KUBECONFIG/kube.yml
-  VERSION=`jq -r .version package.json`
-  cd k8-manifest
-  if [[ $BRANCH_NAME = release ]]
+  projstatus=`curl -s -u admin:admin*****  $SonarQubeServer/api/qualitygates/project_status?projectKey=$img_name.$BRANCH_NAME | jq -r '.projectStatus.status'`
+  echo $projstatus >/tmp/cprojstatus
+  if [[ $projstatus == "ERROR"  ]]
   then
-    cwd=`pwd`
-    cd /var/lib/jenkins/release-manifest
-    deploy_env=`jq -r .CBS[].Environment cbsv2poc.releasecontentdefinition/release_manifest.json`
-    cd $cwd
-    echo "Deploying $dimg_name:$VERSION in $deploy_env namespace"
-    #echo $deploy_env
-    cd $deploy_env
-    #cat deployment.yaml
-    sed -i "s/xxxx/$VERSION/g" deployment.yaml
-    #sed -i "s/xxxx/$VERSION/" deployment.yaml
-    cat deployment.yaml
+     echo "!!! SonarQube Project Status Failed !!!"
+     exit 1
+  else
+        echo "!!! SonarQube Project Status Success !!!"
   fi
-   #echo $deploy_env
-  #cd $deploy_env
-  #echo "PWD:"
-  #pwd
-    if [[ $BRANCH_NAME = develop ]]
-    then
-        cd dev
-    fi
-  deployment_name=$(cat deployment.yaml | grep name: | grep -v - | awk '{ print $2 }')
-  echo $deployment_name
-  kubectl delete deployment $deployment_name -n $deploy_env
-  #kubectl delete -f deployment.yaml
-  sleep 5
-kubectl apply -f deployment.yaml
- if [ $? -ne 0 ]
-      then
-         echo "Deployment Failed"
-         exit -1;
- fi
-kubectl apply -f service.yaml
- if [ $? -ne 0 ]
-      then
-         echo "Service Failed"
-         exit -1;
- fi
 }
 
-function post_deploy()
+function nexus()
 {
-#export KUBECONFIG=/var/lib/jenkins/scripts/KUBECONFIG/tkgm-wld-poc-dev-admin-config
-#kubectl get pod -n dev
-#kubectl apply -f *.yaml -n dev
-#kubectl expose deployment uibase --type=NodePort --name=npuibase -n dev
-echo "!!! Post Deploy !!!"
+
+ if [[ $BRANCH_NAME = *release* ]]
+then
+ docker tag $dimg_name:$NEW_VERSION  $nex_ip:$rport/$dimg_name:$NEW_VERSION
+ docker push $nex_ip:$rport/$dimg_name:$NEW_VERSION
+ docker rmi $nex_ip:$rport/$dimg_name:$NEW_VERSION
+ docker rmi $dimg_name:$NEW_VERSION
+else
+ docker tag $dimg_name:${tag[$BRANCH_NAME]}  $nex_ip:$port/$dimg_name:${tag[$BRANCH_NAME]}
+ docker push $nex_ip:$port/$dimg_name:${tag[$BRANCH_NAME]}
+ docker rmi $dimg_name:${tag[$BRANCH_NAME]}
+ docker rmi $nex_ip:$port/$dimg_name:${tag[$BRANCH_NAME]}
+ fi
 }
 
-
-if [ $instruction = verfiy ]
+if [ $instruction = validate ]
 then
-  verify
-echo "! ! ! Verification completed ! ! !"
+  validation
+echo "Validation"
 
-elif [ $instruction = approval ]
+elif [ $instruction = sourcecode_build ]
 then
- approval
+sourcecode_build
+ echo Soure Code Build
 
-elif [ $instruction = dbscript ]
+elif [ $instruction = docker_build ]
 then
- database_scripts
+ docker_build
+ echo "Docker-build"
 
-elif [ $instruction = deployment ]
+elif [ $instruction = unittest ]
 then
- deployment
- echo "Deployment"
+  unittest
+  echo "unit test"
 
- elif [ $instruction = post_deploy ]
+elif [ $instruction = sonarscan ]
 then
- post_deploy
- echo " !!! Post deployment !!!"
+ sonarscan
+ echo "Sonarscan   . . ."
+
+elif [ $instruction = fortify ]
+then
+  echo "fortify vulnerability scanning . . ."
+
+elif [ $instruction = nex_push ]
+then
+    nexus
+     echo `pwd`
+    echo "Pushing to Nexus Repository . . ."
+#    rm -rf *
+
 else
   echo "/var/lib/jenkins/scripts/main.sh (validate/build/unittest/sonarscanner/fortify/nexus-push)"
 fi

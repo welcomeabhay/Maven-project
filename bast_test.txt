@@ -13,9 +13,9 @@ fi
 env >>/tmp/webuici.env
 . /var/lib/jenkins/scripts/environment_version.sh
 . /var/lib/jenkins/scripts/$BRANCH_NAME
-nex_ip=10.60.17.13
-port=1415
-rport=1416
+nex_ip=*****
+port=******
+rport=*****
 SonarQubeServer="http://******:9000"
 SonarLogin="***************"
  if [[ $BRANCH_NAME = *release* ]]

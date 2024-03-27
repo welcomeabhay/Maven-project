@@ -198,7 +198,7 @@ function sonarscan()
       echo "Sonnar Scanner Failed for Coverage . . .";
       exit 1;
     else
-            reportstatus=`curl -s -u admin:admin123 $reportprocessingurl | jq -r '.task.status'`
+            reportstatus=`curl -s -u admin:admin*787** $reportprocessingurl | jq -r '.task.status'`
             echo $reportstatus >>/tmp/creport
             i=0;
             while [[ $reportstatus != "SUCCESS" ]]
